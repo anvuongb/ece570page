@@ -21,9 +21,9 @@ author: A. Vuong & N. Nguyen
 
 navbar-links:
   About Us: "aboutus"
-  Resources:
-    - Beautiful Jekyll: "https://beautifuljekyll.com"
-    - Learn markdown: "https://www.markdowntutorial.com/"
+  # Resources:
+  #   - Beautiful Jekyll: "https://beautifuljekyll.com"
+  #   - Learn markdown: "https://www.markdowntutorial.com/"
 
 ################
 # --- Logo --- #
