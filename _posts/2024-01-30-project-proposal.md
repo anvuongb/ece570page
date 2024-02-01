@@ -15,7 +15,11 @@ This short post serves as a proposal of our project topic for ECE570 course - ta
 # Table of Contents
 1. [Abstract](#abstract)
 2. [Short introduction](#shortintroduction)
-3. [What is ray tracing?](#introraytracing)
+    1. [What is ray tracing?](#introraytracing)
+    2. [What we did before ray tracing? Rasterization!](#rasterization)
+    3. [Some comparison examples between rasterization and ray tracing](#comparsion)
+3. [What we want to include in the project?](#conclusion)
+4. [References](#references)
 
 ## Abstract <a name="abstract"></a>
 
@@ -26,14 +30,16 @@ Ray tracing is an old problem in graphics processing. In this setting, rays are 
 
 While ray tracing has many applications, here we will constraint ourselves to the problem of simulating light. In the real world, we see corlor of different objects because the light rays coming from some sources (the sun, lamps, monitor, etc.) hitting the objects and get either diffused, reflected, or refracted. The combination of these effects create the colorful world we see every day. In ray tracing based simulation, we will follow exactly this procedure. We begin by shooting a bunch of rays, when these rays hit an object, using a physical model, accurate calculations of the reflecting and refracting rays are computed, then we will follow these resulting rays until they hit the camera/eyes, then summing these rays up will give a precise picture of the world we are simulating. 
 
-In practice, instead of shooting rays from the light source, we actually shoot those rays from the camera/eyes and keep track of all the rays that hit the objects, this works thanks to the bi-directional of light. This is demonstrated below:
-![image](/assets/img/raytracing/1920px-PathOfRays.svg.png "Ray tracing")
+In practice, instead of shooting rays from the light source, we actually shoot those rays from the camera/eyes and keep track of all the rays that hit the objects, this works thanks to the bi-directional property of light. This is demonstrated below:
+![image](/ece570page/assets/img/raytracing/1920px-PathOfRays.svg.png "Ray tracing")
 
 {:.image-caption}
 *Simple model of ray tracing. Source: Wikipedia*
 
-### What we did before ray tracing? Rasterization!
+### What we did before ray tracing? Rasterization! <a name="rasterization"></a>
 
-### Some comparison examples between rasterization and ray tracing
+### Some comparison examples between rasterization and ray tracing <a name="comparison"></a>
 
-## What we want to include in the project
+## What we want to include in the project <a name="conclusion"></a>
+
+## Some references <a name="references"></a>
