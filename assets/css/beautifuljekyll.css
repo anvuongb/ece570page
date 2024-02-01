@@ -1093,3 +1093,8 @@ pre {
     display: inline-block;
   }
 }
+
+.image-caption {
+  text-align: center;
+  font-size: .8rem;
+  color: rgb(29, 24, 24);
