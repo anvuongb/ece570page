@@ -6,7 +6,7 @@ subtitle: A review of hardware-based acceleration of Ray tracing
 # gh-badge: [star, fork, follow]
 tags: [proposal]
 comments: true
-author: A. Vuong & N. Nguyen
+author: An Vuong & Nam Nguyen
 ---
 
 {: .box-success}
