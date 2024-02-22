@@ -8,26 +8,36 @@ tags: [proposal]
 comments: true
 author: An Vuong & Nam Nguyen
 ---
+## Table of contents 
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
-{: .box-success}
-This short post serves as a proposal of our project topic for ECE570 course - taught by Dr. Ben Lee at Oregon State University in Winter 2024.
+- [Abstract ](#abstract)
+- [Background ](#background)
+   * [Graphics rendering pipeline ](#graphics-rendering-pipeline)
+   * [Rasterization](#rasterization)
+   * [Ray tracing](#ray-tracing)
+      + [What is ray tracing? ](#what-is-ray-tracing)
+      + [Ray tracing as a replacement for Rasterization](#ray-tracing-as-a-replacement-for-rasterization)
+      + [Performance concerns ](#performance-concerns)
+- [Hardware acceleration](#hardware-acceleration)
+   * [Overview of Turing architecture](#overview-of-turing-architecture)
+   * [Acceleration of BVH generation](#acceleration-of-bvh-generation)
+   * [RT core](#rt-core)
+- [Benchmark](#benchmark)
+- [Some references ](#some-references)
 
-# Table of Contents
-1. [Abstract](#abstract)
-2. [Short introduction](#shortintroduction)
-    1. [What is ray tracing?](#introraytracing)
-    2. [What we did before ray tracing? Rasterization!](#rasterization)
-    3. [Some comparison examples between rasterization and ray tracing](#comparsion)
-3. [What we want to include in the project?](#conclusion)
-4. [References](#references)
+<!-- TOC end -->
 
-## Abstract <a name="abstract"></a>
+<!-- TOC --><a name="abstract"></a>
+## Abstract 
 
 Ray tracing is an old problem in graphics processing. In this setting, rays are emitted from a source, then its reflecting and refracting rays from other objects are then collected and processed. Using this information, a detailed and accurate simultion of the environment can be constructed. This technique has been widely applied to many fields such as: film making, physics simulation of light and sound wave, etc. First demonstrated successfully in the 1960s, real-time ray tracing on consumer devices still remains a holy grail for computer scientists up until 2018, when Nvidia released the RTX 2000 series with the push for this feature. Since then, a multitude of research in both software and hardware has been devoted to accelerate this process. In this work, we will review the basic of ray tracing, its evolution over the year, and the current state of the art technique.
 
-## Prerequisites <a name="shortintroduction"></a>
+<!-- TOC --><a name="background"></a>
+## Background 
 This section reviews the basics of graphics rendering pipeline. Some details on Rasterization and Raytracing are also given. The information presented here mostly follows the standard from OpenGL.
-### Graphics rendering pipeline <a name="renderpipeline"></a>
+<!-- TOC --><a name="graphics-rendering-pipeline"></a>
+### Graphics rendering pipeline 
 In order to display a scene on a monitor, a 3D scene needs to be correctly transformed into a 2D representation, which can then be passed to to the display buffer and shown. This process of transforming a 3D scene to a 2D representation is often referred to as the **graphics rendering pipeline**. At a very high level, this rendering pipeline can be broken down into 3 major steps:
 ![image](/ece570page/assets/img/rendering/Graphics_pipeline_2_en.svg.png "Rendering pipeline")
 
@@ -48,21 +58,67 @@ Going a bit deeper, OpenGL graphics APIs define the rendering pipeline as the fo
 {:.image-caption}
 *OpenGL Rendering pipeline. Source: Khronos Group*
 
-The steps in blue are accessible and programmable by developers, whereas steps in yellow are fixed functions provided by abstraction from OpenGL depending on the underlying hardware supports. Things might look different in DirectX12 and Vulkan graphics APIs since these libraries offer much more granular access to the hardware, where programmers can customize almost everything. For the purpose of this work, we will assume the model of OpenGL. Next section will focus on the Rasterization stage, the one after that will discuss how it can be replaced by Raytracing and what are the costs of doing so.
+The steps in blue are accessible and programmable by developers, whereas steps in yellow are fixed functions provided by abstractions from OpenGL depending on the underlying hardware supports. Things might look different in DirectX12 and Vulkan graphics APIs since these libraries offer much more granular access to the hardware, where programmers can customize almost everything. For the purpose of this work, we will assume the model of OpenGL. Next section will focus on the Rasterization stage, the one after that will discuss how it can be replaced by Raytracing and what are the costs of doing so.
 
 ![image](/ece570page/assets/img/rendering/exmaple-graphics-pipeline.png "Example Rendering pipeline")
 
 {:.image-caption}
 *An example of rendering pipeline. Source: Graphics Compendium*
+<!-- TOC --><a name="rasterization"></a>
 ### Rasterization
-At a high level, rasterization (or raytracing later on) deals with the problem of projecting a 3D object onto a 2D surface (our displays)
+At a high level, rasterization (or raytracing later on) deals with the problem of projecting a 3D object onto a 2D surface (our displays). 
 
 ![image](/ece570page/assets/img/rendering/projection_3d_to_screen.png "Example rasterization")
 
 {:.image-caption}
 *Rasterization of a simple triangle. Source: Mariano Trebino*
-### Raytracing as a replacement
-### What is ray tracing? <a name="introraytracing"></a>
+
+As shown in the figure above, this problem roughly translates to the problem of coloring each pixels depending on whether the object falls onto that position or not. This problem, simple as first glance, turns out to be very expensive to compute. A naive approach is to iterate through all the pixels and check whether it overlaps with the object or not. This might be very inefficient if the object is small.
+
+<p align="center" width="100%">
+    <img width="50%" src="/ece570page/assets/img/rendering/iterate_screen_pixels.png " > 
+</p>
+
+{:.image-caption}
+*Rasterization of a simple triangle. Source: Mariano Trebino*
+
+A simple yet effective optimization is to first calculate the bounding box of the triangle, then only iterate over the pixels that fall within the bounding box.
+
+<p align="center" width="100%">
+    <img width="50%" src="/ece570page/assets/img/rendering/optimized_iteration.png " > 
+</p>
+
+{:.image-caption}
+*Optimized rasterization of a simple triangle. Source: Mariano Trebino*
+
+The next question is what if there are multiple objects (triangles)? If we simply apply the same idea, there will be issues with the rendering order, since a 3D scene has depth (one object can be behind another), this geometry needs to be preserved when projecting onto the screen. A nice trick in the graphics processing is to use the depth buffer (also known as the Z-buffer). The Z-buffer stores the distances (Z-axis values) from the projection center to the objects, this in turns help the pipeline to determine the correct order.
+
+<p align="center" width="100%">
+    <img width="55%" src="/ece570page/assets/img/rendering/depth_problem.png" > 
+</p>
+
+{:.image-caption}
+*Rasterization of a 2 triangles. Source: Mariano Trebino*
+
+The Z-buffer also plays critical role in the parallelization of rasterization. Without it, the coloring process needs to be applied in an order that respects the geometry of the 3D scene. With Z-buffer, now we can process all pixels concurrently and then apply a merge step, where information from the Z-buffer will be used to rearrange the order. This parallelization is partially why rasterization, despite being mostly a bruteforce approach, has been the most popular rendering technique since its inception. 
+
+Since rasterization is so important to graphics rendering, modern GPUs usually dedicate large amount of their sillicon budget to implement dozens of rasterization units. For e.g, the RTX 2080 has 64 Rasterization Operation Processors (ROPs) which can be executed in parallel to create a frame. As can be seen from the diagram below, Rasterization engines play a big part in the Turing architecture, Nvidia dedicated 16 ROPs to each of 6 Graphics Processing Clusters (GPCs). These raster engines take data produced by the Streaming Multiprocessing Units (SMs) and render the frame onto the screen. The SMs effectively process the scene according to the pipeline mentioned earlier.
+
+![image](/ece570page/assets/img/rendering/2080diagram.png "Nvidia Turing TU102")
+
+{:.image-caption}
+*Nvidia Turing TU102 High level diagram. Source: Nvidia*
+
+To make the comparison with Raytracing easier later on, at a very high level, the compute loop for rasterization looks like this:
+```python
+for object in all_objects:
+    for pixel in possible_pixels:
+        test_if_pixel_in_object_by_position_check()
+```
+<!-- TOC --><a name="ray-tracing"></a>
+### Ray tracing
+<!-- TOC --><a name="what-is-ray-tracing"></a>
+#### What is ray tracing? 
 
 While ray tracing has many applications, here we will constraint ourselves to the problem of simulating light. In the real world, we see color of different objects because the light rays coming from some sources (the sun, lamps, monitor, etc.) hitting the objects and get either diffused, reflected, or refracted. The combination of these effects create the colorful world we see every day. In ray tracing based simulation, we will follow exactly this procedure. We begin by shooting a bunch of rays, when these rays hit an object, using a physical model, accurate calculations of the reflecting and refracting rays are computed, then we will follow these resulting rays until they hit the camera/eyes, then summing these rays up will give a precise picture of the world we are simulating. 
 
@@ -72,47 +128,80 @@ In practice, instead of shooting rays from the light source, we actually shoot t
 {:.image-caption}
 *Simple model of ray tracing. Source: Wikipedia*
 
-In 2018, with the release of the RTX 2000 series, Nvidia introduced the RT cores, whose sole purpose is to accelerate the ray tracing calculations. Since then, the architecture has been refined and new algorithms have been introduced, culminating in something we now call Ray Reconstruction, which is currently state-of-the-art for real-time ray tracing. We'll put our main focus on the RT cores, ray tracing pipeline, and the Ray Reconstruction technique in our project.
+<!-- TOC --><a name="ray-tracing-as-a-replacement-for-rasterization"></a>
+#### Ray tracing as a replacement for Rasterization
+Recall that rasterization can be thought as a problem of checking whether a pixel overlaps with an object or not. We can apply the idea of raytracing to this problem as follows: starting from the camera (center of projection), we shoot a ray at each pixel, then we trace this ray to see if it hits any object. If it does not hit anything, then the pixel should not be colored, on the other hand, if the ray hits something, we can then query the properties of that object to render the pixel.
 
-![image](/ece570page/assets/img/raytracing/rtcores.png "RT Cores")
-
-{:.image-caption}
-*New RT Cores in Nvidia Turing - Source: Nvidia white paper*
-
-### What we did before ray tracing? Rasterization! <a name="rasterization"></a>
-
-Before the commoditization of ray tracing, in order to render a scence, be it a movie scene, a 3D object, or a video game frame, the most popular approach is rasterization. While rasterization pipelines are different for different architectures, the general idea is to divide the scene into a bunch of polygons (usally triangles) with connected edges. Then shaders are used to color these polygons based on some pre-defined rules set by the designers. Because of this, the rendering of the scene is actually based on some carefully chosen rules in order to best mimic reality, not the actual physical rules. While experienced designers can make a rasterized scene looks excellent, it is still an emulation. In constrast, ray tracing strives to render a scene based on the actual physical laws of light. In other words, rasterization tries to emulate the world, while ray tracing tries to simulate it. 
-
-While rasterization will not be the main focus of our project, we think it is needed in order to understand how impactful ray tracing is, so we will briefly introduce this in our projects. We will also give some examples to make comparison between these two techniques, some of them are shown in the next section.
-
-### Some comparison examples between rasterization and ray tracing <a name="comparison"></a>
-![image](/ece570page/assets/img/raytracing/cyberpunk.png "Cyberpunk 2077")
+<p align="center" width="100%">
+    <img width="55%" src="/ece570page/assets/img/rendering/raytracediagram.png" > 
+</p>
 
 {:.image-caption}
-*A scene from Cyberpunk 2077, left is with RT, right is with rasterization*
+*Pixel testing using ray tracing. Source: Scratch a pixel*
 
-![image](/ece570page/assets/img/raytracing/farcry.png "Far Cry 6")
+The compute loop for ray tracing can be thought of as:
+```python
+for pixel in possible_pixels:
+    for object in all_objects:
+        test_if_pixel_in_object_by_shooting_ray()
+```
+
+Note that the iterators of objects and pixels are swapped for ray tracing compared to rasterization. Similar to rasterization, the computation will be extremely inefficient if we just naively shoot rays at every pixel. A trick to optimize this process is to pre-calculate a tree of objects such that the childs are contained inside the parents from the perspective of the camera. There a many different data structures that try to tackle this, one of them is the Bounding Volume Hierarchy (BVH), which is being used by all the major players like Nvidia, Intel, and AMD.
+
+As an example, the figure below shows a possible BVH structure of a rabbit. When we trace a ray, we keep going only if the ray hits the bigger bounding volume first. If not, the tracing process for that pixel is stopped. It turns out traversing the BVH tree is of O(log n) which is very efficient. Notice that by using ray tracing, we can bypass the problem of Z-buffer, since the ray will always hit the front objects first.
+
+<p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/rendering/bvh.png" > 
+</p>
 
 {:.image-caption}
-*A scene from Far Cry 6, left is with RT, right is with rasterization*
+*BVH algorithm. Source: Nvidia*
 
-We can see that the difference ray tracing provides is quite massive. The reflections are actually based on the physical model of the world, since their constructions are from the information provided by the traced rays. On the other hand, rasterization has to rely on heuristic techniques called baked lighting and cube map, while this can work well, it has to be manually tuned for each scene and requires a high level of artistic skills.
+ At this stage, it seems like we are complicating the problem by using ray tracing. But the magic happens when we keep on tracing the ray after it hits the object, i.e, allowing the rays to bounce. Every time a ray bounces off an object, we can utilize the material information and simulate the effect of lights, we can then use this newly acquired information to better coloring the pixels. The more bounces we allow a ray to have, the better the rendered image will look. So in this sense, ray tracing not only replaces rasterization as rendering engine, it actually also makes the frame looks more realistic. An example is:
 
-### Performance concerns <a name="performance"></a>
+ <p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/rendering/raster.png" > 
+</p>
 
-While ray tracing does provide a massive uplift in visual quality, it also comes with one of the biggest hit in performance ever seen in a feature in the industry. At release, the performance deficit of using ray tracing on an RTX 2080 can be as much as 50%, which made many people concerned whether it was worth it. Having anticipated this, Nvidia also introduced an image reconstruction technique called DLSS that took advantage of the improved tensor cores to balance this performance hit. The general idea is to applying ray tracing to a low resolution frame, then apply DLSS to upscale that rendered frame to high resolution. In this project, we will also review about the tensor cores, while this is also not the main focus, it is one of the main components that makes ray tracing works in practice!
+{:.image-caption}
+*Rasterization. Source: Wikipedia*
 
-## What we want to include in the project <a name="conclusion"></a>
+<p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/rendering/rt.png" > 
+</p>
 
-To summarize, we are working to include the following in our project:
-- Review of rasterization 
-- Review of ray tracing
-- How RT cores accelerate ray tracing
-- How Tensor cores play a part in this process
-- Comparison between rasterization and ray tracing
-- Some performance benchmarks between software-based and hardware-based ray tracing
+{:.image-caption}
+*Ray tracing. Source: Wikipedia*
 
-## Some references <a name="references"></a>
+
+<!-- TOC --><a name="performance-concerns"></a>
+#### Performance concerns 
+
+As mentioned earlier, thanks to the bidirectionality of light, instead of shooting rays from the light source, we can should rays from the camera and the scene will still be rendered accurately, this is well demonstrated in:
+<p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/rendering/rtdiagram.jpg" > 
+</p>
+
+{:.image-caption}
+*Ray tracing diagram. Source: Timrb*
+
+Notice that, from the diagram, to get accurate lighting, we need to trace each ray to the light source in order to have correct lighting and shadow information. This makes ray tracing a very expensive process, thus while ray tracing does provide a massive uplift in visual quality, it also comes with one of the biggest hit in performance ever seen in a feature in the industry. 
+
+At release, the performance deficit of using ray tracing on an RTX 2080 can be as much as 50%, which made many people concerned whether it was worth it. Having anticipated this, Nvidia also introduced an image reconstruction technique called DLSS that took advantage of the improved tensor cores to balance this performance hit. The general idea is to applying ray tracing to a low resolution frame, then apply DLSS to upscale that rendered frame to high resolution. In the following sections, we will take a look at Turing architecture and how it accelrates the processing of ray tracing.
+
+<!-- TOC --><a name="hardware-acceleration"></a>
+## Hardware acceleration
+Work in progress
+<!-- TOC --><a name="overview-of-turing-architecture"></a>
+### Overview of Turing architecture
+<!-- TOC --><a name="acceleration-of-bvh-generation"></a>
+### Acceleration of BVH generation
+<!-- TOC --><a name="rt-core"></a>
+### RT core
+<!-- TOC --><a name="benchmark"></a>
+## Benchmark
+<!-- TOC --><a name="some-references"></a>
+## Some references 
 - [Ray Reconstruction in DLSS 3.5](https://www.nvidia.com/en-us/geforce/news/nvidia-dlss-3-5-ray-reconstruction/)
 - [Nvidia Turing white paper](https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf)
 - [Nvidia Ampere white paper](https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf)

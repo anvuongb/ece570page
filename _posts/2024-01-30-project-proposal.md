@@ -8,6 +8,8 @@ tags: [proposal]
 comments: true
 author: An Vuong & Nam Nguyen
 ---
+{: .box-success}
+Updated Feb 21, 2024. The page for Midreport is created at [here]({{ site.baseurl }}{% link _posts/2024-02-21-project-mid-report.md %})
 
 {: .box-success}
 This short post serves as a proposal of our project topic for ECE570 course - taught by Dr. Ben Lee at Oregon State University in Winter 2024.
