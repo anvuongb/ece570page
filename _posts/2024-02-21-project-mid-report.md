@@ -146,7 +146,7 @@ for pixel in possible_pixels:
         test_if_pixel_in_object_by_shooting_ray()
 ```
 
-Note that the iterators of objects and pixels are swapped for ray tracing compared to rasterization. Similar to rasterization, the computation will be extremely inefficient if we just naively shoot rays at every pixel. A trick to optimize this process is to pre-calculate a tree of objects such that the childs are contained inside the parents from the perspective of the camera. There a many different data structures that try to tackle this, one of them is the Bounding Volume Hierarchy (BVH), which is being used by all the major players like Nvidia, Intel, and AMD.
+Note that the iterators of objects and pixels are swapped for ray tracing compared to rasterization. Similar to rasterization, the computation will be extremely inefficient if we just naively shoot rays at every pixel. A trick to optimize this process is to pre-calculate a tree of objects such that the childs are contained inside the parents from the perspective of the camera. There are many different data structures that try to tackle this, one of them is the Bounding Volume Hierarchy (BVH), which is being used by all the major players like Nvidia, Intel, and AMD.
 
 As an example, the figure below shows a possible BVH structure of a rabbit. When we trace a ray, we keep going only if the ray hits the bigger bounding volume first. If not, the tracing process for that pixel is stopped. It turns out traversing the BVH tree is of O(log n) which is very efficient. Notice that by using ray tracing, we can bypass the problem of Z-buffer, since the ray will always hit the front objects first.
 
