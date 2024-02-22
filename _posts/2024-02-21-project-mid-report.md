@@ -21,16 +21,20 @@ author: An Vuong & Nam Nguyen
       + [Performance concerns ](#performance-concerns)
 - [Hardware acceleration](#hardware-acceleration)
    * [Overview of Turing architecture](#overview-of-turing-architecture)
-   * [Acceleration of BVH generation](#acceleration-of-bvh-generation)
-   * [RT core](#rt-core)
+      + [More details on SMs](#more-details-on-sms)
+      + [Memory hierarchy](#memory-hierarchy)
+   * [RT core for Ray tracing](#rt-core-for-ray-tracing) (work-in-progress)
+      + [Acceleration of BVH generation](#acceleration-of-bvh-generation)
+      + [Acceleration by upscaling](#acceleration-by-upscaling)
+      + [An example](#an-example)
 - [Benchmark](#benchmark)
+- [Conclusion](#conclusion)
 - [Some references ](#some-references)
 
 <!-- TOC end -->
 
 <!-- TOC --><a name="abstract"></a>
 ## Abstract 
-
 Ray tracing is an old problem in graphics processing. In this setting, rays are emitted from a source, then its reflecting and refracting rays from other objects are then collected and processed. Using this information, a detailed and accurate simultion of the environment can be constructed. This technique has been widely applied to many fields such as: film making, physics simulation of light and sound wave, etc. First demonstrated successfully in the 1960s, real-time ray tracing on consumer devices still remains a holy grail for computer scientists up until 2018, when Nvidia released the RTX 2000 series with the push for this feature. Since then, a multitude of research in both software and hardware has been devoted to accelerate this process. In this work, we will review the basic of ray tracing, its evolution over the year, and the current state of the art technique.
 
 <!-- TOC --><a name="background"></a>
@@ -173,7 +177,6 @@ As an example, the figure below shows a possible BVH structure of a rabbit. When
 {:.image-caption}
 *Ray tracing. Source: Wikipedia*
 
-
 <!-- TOC --><a name="performance-concerns"></a>
 #### Performance concerns 
 
@@ -216,7 +219,7 @@ The meat of a GPU usually lies in the SMs, where most of the compute happens. Fo
 - 256 KB register file
 - 96 KB L1 cache (shared within a GPC)
 
-In total, a long with the memory controller and communication bus, the TU102 die has a massive 18.6 billion transistors, a 55% increase compared to previous generation (the GTX 1080Ti). Compare to GTX 1080Ti (PA102), each SM of the TU102 contains less CUDA cores, but the total number of SMs is more than double, which yields a 21% increase the amount of CUDA cores. This is mainly because each SM now has to give space to accomodate the newly introduced Tensor and RT cores, which takes a lot of sillicon budget to implement.
+In total, along with the memory controller and communication bus, the TU102 die has a massive 18.6 billion transistors, a 55% increase compared to previous generation (the GTX 1080Ti). Compare to GTX 1080Ti (PA102), each SM of the TU102 contains less CUDA cores, but the total number of SMs is more than double, which yields a 21% increase the amount of CUDA cores. This is mainly because each SM now has to give space to accomodate the newly introduced Tensor and RT cores, which takes a lot of sillicon budget to implement.
 
 <p align="center" width="100%">
     <img width="75%" src="/ece570page/assets/img/arch/comparetable.png" > 
@@ -225,15 +228,77 @@ In total, a long with the memory controller and communication bus, the TU102 die
 {:.image-caption}
 *Comparison with Pascal architecture. Source: Nvidia*
 
-Compared to previous architectures, 
+<!-- TOC --><a name="more-details-on-sms"></a>
+#### More details on SMs
+
+Going deeper into the implementation of SMs, we found the following setup:
+- Warp schedulers: each SM has 4 warp schedulers, this unit handle a static set of warps (each warp is a collection of fixed number of threads, usually 32) and issues instructions to a dedicated set of arithmetic instruction units. 
+- Instructions are performed over 2 cycles, independent instructions can be issued every cycle (pipelined)
+- For core FMA (fused-multiply add) math operations, dependent instructions issue latency is 4 clock cycles. Since there are 4 warp schedulers within an SM, this latency can be hidden by using 4-way instruction-level parallelism per warp.
+
+<p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/arch/sm.png" > 
+</p>
+
+{:.image-caption}
+*Organization of each SM. Source: Fabien Sanglard*
+
+An interesting aspect of the TU102 SMs is what Nvidia counts as CUDA cores. The listed 64 CUDA cores are, in fact, 128 units. Half of them can only execute INT32 operations, while the other half only does FP32. All of these cores can be executed in parallel, so the best way to utilize the TU102 is to use mixed precision computing, otherwise half of the CUDA cores will be effectively sleeping during the computation. For FP64 operations, TU102 only has 2 dedicated units, so high-precision calculation is not recommended on this device. Besides the CUDA cores, which can be thought of general computing units, there are also 4 Special Functions Units (SFUs) and 8 Tensor cores. 
+
+SFUs are utilized when dealing with special functions like logarithms, sinusoidals, transcendentals, etc. This helps accelerate complex computations and free the CUDA cores for other jobs. As for the Tensor cores, this is an entirely new component of TU102. These units can also be thought of as another kind of SFUs, but instead of some special functions, the tensor cores' whole purpose is to maximize high-dimensional matrix (tensor) multiplications. The reason for the existence of this is because Nvidia predicted the rise of deep learning, which, at its core, is all about matrix multiplications. So they placced a huge bet on this functionality, and it seems to be paying off nicely. It turns out Tensor cores also play a critical role in accelerating ray tracing, which we will go into later.
+
+<p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/arch/tensorcore.gif" > 
+</p>
+
+{:.image-caption}
+*Acceleration of matrix multiplcation using Tensor cores. Source: Nvidia*
+
+<!-- TOC --><a name="memory-hierarchy"></a>
+#### Memory hierarchy
+In order to feed all of these computation units with data, TU102 also made big changes in the design of memory compared to the previous generations. In Turing, the memory is now unified, this creates a single path for texture caching and memory loads, this frees up L1 for other data. An interesting thing is the amount of unified/shared memory can now be set up at run time, applications can decide whether they need more L1 cache or more shared memory, for e.g, from the total of 96 KB, 64 KB can be shared and 32 KB can be L1, or vice versa. The L2 cache size also doubles from 3 MB in Pascal to 6 MB to help feeding the increase number of computing cores.
+
+<p align="center" width="100%">
+    <img width="50%" src="/ece570page/assets/img/arch/memory.png" > 
+</p>
+
+{:.image-caption}
+*TU102 memory hierarchy. Source: Nvidia*
+
+With Turing, Nvidia was also the first manufacturer to introduce GDDR6 on a consumers' device. This new memory delivers a signaling rate of 14 Gbps, a 27% increase from last generation, also with 20% better power efficiency.
+
+<p align="center" width="100%">
+    <img width="50%" src="/ece570page/assets/img/arch/eyediagram.png" > 
+</p>
+
+{:.image-caption}
+*Memory signal eye diagram. Source: Nvidia*
+
+Finally, TU102 also introduces new memory compression algorithm that  reduces the amount of data written out to memory and transferred from memory to the L2 cache, and reduces the amount of data transferred between clients (such as the texture unit) and the frame buffer. This compression is based on different characteristics of the data, effectively this feature translates to 50% increase in effective bandwidth compared to Pascal.
+
+<p align="center" width="100%">
+    <img width="100%" src="/ece570page/assets/img/arch/memorycomp.png" > 
+</p>
+
+{:.image-caption}
+*Traffic reduction improvement. Source: Nvidia*
+
+<!-- TOC --><a name="rt-core-for-ray-tracing"></a>
+### RT core for Ray tracing
+Work in progress
 <!-- TOC --><a name="acceleration-of-bvh-generation"></a>
-### Acceleration of BVH generation
-<!-- TOC --><a name="rt-core"></a>
-### RT core
+#### Acceleration of BVH generation
+<!-- TOC --><a name="acceleration-by-upscaling"></a>
+#### Acceleration by upscaling
+<!-- TOC --><a name="an-example"></a>
+#### An example
 <!-- TOC --><a name="benchmark"></a>
 ## Benchmark
+<!-- TOC --><a name="conclusion"></a>
+## Conclusion
 <!-- TOC --><a name="some-references"></a>
 ## Some references 
 - [Ray Reconstruction in DLSS 3.5](https://www.nvidia.com/en-us/geforce/news/nvidia-dlss-3-5-ray-reconstruction/)
 - [Nvidia Turing white paper](https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf)
 - [Nvidia Ampere white paper](https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf)
+        
