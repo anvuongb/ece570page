@@ -29,7 +29,7 @@ author: An Vuong & Nam Nguyen
       + [An example](#an-example)
 - [Benchmark](#benchmark)
 - [Conclusion](#conclusion)
-- [Some references ](#some-references)
+- [References ](#some-references)
 
 <!-- TOC end -->
 
