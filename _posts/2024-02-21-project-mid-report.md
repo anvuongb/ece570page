@@ -293,7 +293,7 @@ To better appreciate the hardware acceleration of ray tracing, let us first reca
 BVH structure traversal is the most expensive stage of the pipeline. Traditionally this is done by software and is hence very slow. RT cores are specialized hardware whose purpose is to accelerate this traversal process. Thus, we can think of RT cores as another kind of functional units whose job is solely to traverse the BVH structure as fast as possible.
 
 <p align="center" width="100%">
-    <img width="75%" src="/ece570page/assets/img/arch/raytrace_01-625x630.png" > 
+    <img width="50%" src="/ece570page/assets/img/arch/raytrace_01-625x630.png" > 
 </p>
 
 {:.image-caption}
