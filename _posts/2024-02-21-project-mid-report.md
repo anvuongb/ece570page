@@ -23,8 +23,8 @@ author: An Vuong & Nam Nguyen
    * [Overview of Turing architecture](#overview-of-turing-architecture)
       + [More details on SMs](#more-details-on-sms)
       + [Memory hierarchy](#memory-hierarchy)
-   * [RT core for Ray tracing](#rt-core-for-ray-tracing) (work-in-progress)
-      + [Acceleration of BVH generation](#acceleration-of-bvh-generation)
+   * [RT cores for Ray tracing](#rt-cores-for-ray-tracing) (work-in-progress)
+      + [Acceleration of BVH traversal](#acceleration-of-bvh-traversal)
       + [Acceleration by upscaling](#acceleration-by-upscaling)
       + [An example](#an-example)
 - [Benchmark](#benchmark)
@@ -256,7 +256,7 @@ SFUs are utilized when dealing with special functions like logarithms, sinusoida
 
 <!-- TOC --><a name="memory-hierarchy"></a>
 #### Memory hierarchy
-In order to feed all of these computation units with data, TU102 also made big changes in the design of memory compared to the previous generations. In Turing, the memory is now unified, this creates a single path for texture caching and memory loads, this frees up L1 for other data. An interesting thing is the amount of unified/shared memory can now be set up at run time, applications can decide whether they need more L1 cache or more shared memory, for e.g, from the total of 96 KB, 64 KB can be shared and 32 KB can be L1, or vice versa. The L2 cache size also doubles from 3 MB in Pascal to 6 MB to help feeding the increase number of computing cores.
+In order to feed all of these computation units with data, TU102 also made big changes in the design of memory compared to the previous generations. In Turing, the memory is now unified, this creates a single path for texture caching and memory loads and frees up L1 for other data. An interesting thing is the amount of unified/shared memory can now be set up at run time, applications can decide whether they need more L1 cache or more shared memory, for e.g, from the total of 96 KB, 64 KB can be shared and 32 KB can be L1, or vice versa. The L2 cache size also doubles from 3 MB in Pascal to 6 MB to help feeding the increase number of computing cores.
 
 <p align="center" width="100%">
     <img width="50%" src="/ece570page/assets/img/arch/memory.png" > 
@@ -283,11 +283,23 @@ Finally, TU102 also introduces new memory compression algorithm that  reduces th
 {:.image-caption}
 *Traffic reduction improvement. Source: Nvidia*
 
-<!-- TOC --><a name="rt-core-for-ray-tracing"></a>
-### RT core for Ray tracing
-Work in progress
-<!-- TOC --><a name="acceleration-of-bvh-generation"></a>
-#### Acceleration of BVH generation
+<!-- TOC --><a name="rt-cores-for-ray-tracing"></a>
+### RT cores for Ray tracing
+To better appreciate the hardware acceleration of ray tracing, let us first recall a general ray tracing pipeline, which was briefly mentioned in the Background section. Assuming the BVH structured is already available, generally speaking, the ray tracing pipeline consists of:
+- Ray generation/casting: A ray is shoot from a camera perspective, this is usually done by shaders located inside SMs.
+- Ray trace: A ray is then traced by traversing the BVH structure. 
+- Target hit or miss: whenever a ray hits something, the information on textures, materials, etc. are queried to perform the rendering.
+
+BVH structure traversal is the most expensive stage of the pipeline. Traditionally this is done by software and is hence very slow. RT cores are specialized hardware whose purpose is to accelerate this traversal process. Thus, we can think of RT cores as another kind of functional units whose job is solely to traverse the BVH structure as fast as possible.
+
+<p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/arch/raytrace_01-625x630.png" > 
+</p>
+
+{:.image-caption}
+*Ray tracing pipeline. Source: Nvidia*
+<!-- TOC --><a name="acceleration-of-bvh-traversal"></a>
+#### Acceleration of BVH traversal
 <!-- TOC --><a name="acceleration-by-upscaling"></a>
 #### Acceleration by upscaling
 <!-- TOC --><a name="an-example"></a>
@@ -297,9 +309,11 @@ Work in progress
 <!-- TOC --><a name="conclusion"></a>
 ## Conclusion
 <!-- TOC --><a name="some-references"></a>
-## Some references 
+## References 
 - [Ray Reconstruction in DLSS 3.5](https://www.nvidia.com/en-us/geforce/news/nvidia-dlss-3-5-ray-reconstruction/)
 - [Nvidia Turing white paper](https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf)
 - [Nvidia Ampere white paper](https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf)
 - [A history of NVIDA GPU architecture](https://fabiensanglard.net/cuda/)
+- [Nvidia Developers blog](https://developer.nvidia.com/blog)
+- [Microsoft's DirectX12](https://devblogs.microsoft.com/directx/announcing-microsoft-directx-raytracing/)
         
