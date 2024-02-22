@@ -191,9 +191,41 @@ At release, the performance deficit of using ray tracing on an RTX 2080 can be a
 
 <!-- TOC --><a name="hardware-acceleration"></a>
 ## Hardware acceleration
-Work in progress
 <!-- TOC --><a name="overview-of-turing-architecture"></a>
 ### Overview of Turing architecture
+Focusing on the Ampere TU102 die from Nvidia, from a high level, this chip is organized into 6 Graphics Processing Clusters (GPCs), each GPC contains:
+
+- a dedicated Raster Engine: this unit setups the whole rasterization process as well as performing the Z-buffer merge in the end (called Z-Cull)
+- 2 raster operator partitions, each partition contains 8 ROP units: assemble the GPU output into a bitmapped image ready for display.
+- 6 Texture Processing Clusters (TPCs): each TPC includes 2 Streaming Multiprocessors (SMs) and 1 PolyMorph Engine, these units mostly handle geometry processing.
+- All GPCs share an L2 cache of 6MB
+
+<p align="center" width="100%">
+    <img width="100%" src="/ece570page/assets/img/arch/gpcs.png" > 
+</p>
+
+{:.image-caption}
+*Zoomed in into 2 GPCs. Source: Nvidia*
+
+The meat of a GPU usually lies in the SMs, where most of the compute happens. For this reason, TU102 organizes each SM as follow:
+
+- 64 CUDA cores
+- 8 Tensor cores to accelerate tensor processing (more on this later)
+- 1 RT cores to accelerate rays processing (more on this later)
+- 4 Texture units
+- 256 KB register file
+- 96 KB L1 cache (shared within a GPC)
+
+In total, a long with the memory controller and communication bus, the TU102 die has a massive 18.6 billion transistors, a 55% increase compared to previous generation (the GTX 1080Ti). Compare to GTX 1080Ti (PA102), each SM of the TU102 contains less CUDA cores, but the total number of SMs is more than double, which yields a 21% increase the amount of CUDA cores. This is mainly because each SM now has to give space to accomodate the newly introduced Tensor and RT cores, which takes a lot of sillicon budget to implement.
+
+<p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/arch/comparetable.png" > 
+</p>
+
+{:.image-caption}
+*Comparison with Pascal architecture. Source: Nvidia*
+
+Compared to previous architectures, 
 <!-- TOC --><a name="acceleration-of-bvh-generation"></a>
 ### Acceleration of BVH generation
 <!-- TOC --><a name="rt-core"></a>
