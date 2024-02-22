@@ -55,6 +55,12 @@ The steps in blue are accessible and programmable by developers, whereas steps i
 {:.image-caption}
 *An example of rendering pipeline. Source: Graphics Compendium*
 ### Rasterization
+At a high level, rasterization (or raytracing later on) deals with the problem of projecting a 3D object onto a 2D surface (our displays)
+
+![image](/ece570page/assets/img/rendering/projection_3d_to_screen.png "Example rasterization")
+
+{:.image-caption}
+*Rasterization of a simple triangle. Source: Mariano Trebino*
 ### Raytracing as a replacement
 ### What is ray tracing? <a name="introraytracing"></a>
 
