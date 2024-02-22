@@ -4,7 +4,7 @@ title: Project Mid-report
 subtitle: A review of hardware-based acceleration of Ray tracing
 # gh-repo: daattali/beautiful-jekyll
 # gh-badge: [star, fork, follow]
-tags: [proposal]
+tags: [midreport]
 comments: true
 author: An Vuong & Nam Nguyen
 ---
