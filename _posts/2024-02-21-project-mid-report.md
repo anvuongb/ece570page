@@ -183,7 +183,7 @@ As an example, the figure below shows a possible BVH structure of a rabbit. When
 <!-- TOC --><a name="performance-concerns"></a>
 #### Performance concerns 
 
-As mentioned earlier, thanks to the bidirectionality of light, instead of shooting rays from the light source, we can should rays from the camera and the scene will still be rendered accurately, this is well demonstrated in:
+As mentioned earlier, thanks to the bidirectionality of light, instead of shooting rays from the light source, we can shoot rays from the camera and the scene will still be rendered accurately, this is well demonstrated in:
 <p align="center" width="100%">
     <img width="75%" src="/ece570page/assets/img/rendering/rtdiagram.jpg" > 
 </p>
