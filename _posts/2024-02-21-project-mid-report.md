@@ -301,6 +301,12 @@ BVH structure traversal is the most expensive stage of the pipeline. Traditional
 
 {:.image-caption}
 *Ray tracing pipeline. Source: Nvidia*
+
+
+---
+
+*The following sections are being worked on*
+
 <!-- TOC --><a name="acceleration-of-bvh-traversal"></a>
 #### Acceleration of BVH traversal
 <!-- TOC --><a name="acceleration-by-upscaling"></a>
