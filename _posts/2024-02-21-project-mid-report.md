@@ -290,7 +290,7 @@ Finally, TU102 also introduces new memory compression algorithm that  reduces th
 ### RT cores for Ray tracing
 To better appreciate the hardware acceleration of ray tracing, let us first recall a general ray tracing pipeline, which was briefly mentioned in the Background section. Assuming the BVH structured is already available, generally speaking, the ray tracing pipeline consists of:
 - Ray generation/casting: A ray is shoot from a camera perspective, this is usually done by shaders located inside SMs.
-- Ray trace: A ray is then traced by traversing the BVH structure. 
+- Ray trace: A ray is then traced by traversing the BVH structure. From the API, this function is named TraceRay().
 - Target hit or miss: whenever a ray hits something, the information on textures, materials, etc. are queried to perform the rendering. What's interesting is that at this stage, the TraceRay() functionality can be called recursively, this effectively changes the number of bounces each ray has. This features give developer controls over the tradeoff between image quality and performance.
 
 BVH structure traversal is the most expensive stage of the pipeline. Traditionally this is done by software and is hence very slow. RT cores are specialized hardware whose purpose is to accelerate this traversal process. Thus, we can think of RT cores as another kind of functional units whose job is solely to traverse the BVH structure as fast as possible.
