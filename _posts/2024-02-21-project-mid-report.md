@@ -127,7 +127,10 @@ for object in all_objects:
 While ray tracing has many applications, here we will constraint ourselves to the problem of simulating light. In the real world, we see color of different objects because the light rays coming from some sources (the sun, lamps, monitor, etc.) hitting the objects and get either diffused, reflected, or refracted. The combination of these effects create the colorful world we see every day. In ray tracing based simulation, we will follow exactly this procedure. We begin by shooting a bunch of rays, when these rays hit an object, using a physical model, accurate calculations of the reflecting and refracting rays are computed, then we will follow these resulting rays until they hit the camera/eyes, then summing these rays up will give a precise picture of the world we are simulating. 
 
 In practice, instead of shooting rays from the light source, we actually shoot those rays from the camera/eyes and keep track of all the rays that hit the objects, this works thanks to the bi-directional property of light. This is demonstrated below:
-![image](/ece570page/assets/img/raytracing/1920px-PathOfRays.svg.png "Ray tracing")
+
+<p align="center" width="100%">
+    <img width="65%" src="/ece570page/assets/img/raytracing/1920px-PathOfRays.svg.png" > 
+</p>
 
 {:.image-caption}
 *Simple model of ray tracing. Source: Wikipedia*
@@ -186,7 +189,7 @@ As mentioned earlier, thanks to the bidirectionality of light, instead of shooti
 </p>
 
 {:.image-caption}
-*Ray tracing diagram. Source: Timrb*
+*Ray tracing diagram. Source: Nvidia*
 
 Notice that, from the diagram, to get accurate lighting, we need to trace each ray to the light source in order to have correct lighting and shadow information. This makes ray tracing a very expensive process, thus while ray tracing does provide a massive uplift in visual quality, it also comes with one of the biggest hit in performance ever seen in a feature in the industry. 
 
