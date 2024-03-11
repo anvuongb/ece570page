@@ -360,7 +360,7 @@ Recently, Nvidia also introduce a new technique called Ray Reconstruction in DLS
 {:.image-caption}
 *Simple scene configuration in Blender*
 
-To quickly demonstrate the performance of ray tracing on GPU. We created a simple scene in Blender with some translucent and reflective objects. We then rendered this scene using pure rasterization and path tracer (a more intensive and much more accurate version of ray tracing). The result is as follow:
+To quickly demonstrate the performance of ray tracing on GPU. We created a simple scene in Blender with some translucent and reflective objects. We then rendered this scene using pure rasterization and path tracer (a more intensive and much more accurate version of ray tracing). The result (run on AMD 3900X + Nvidia RTX 3080) is as follow:
 
  <table style="margin: 0px auto;">
   <tr>
@@ -390,7 +390,7 @@ To quickly demonstrate the performance of ray tracing on GPU. We created a simpl
   </tr>
   <tr>
     <td>RT 1024 rays/pixel</td>
-    <td></td>
+    <td>442.4s</td>
     <td>112.7s</td>
   </tr>
 </table> 
