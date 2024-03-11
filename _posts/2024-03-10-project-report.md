@@ -417,7 +417,7 @@ We can see that as the number of rays increases, the gap between using CPU and G
 <link rel="stylesheet" href="https://cdn.knightlab.com/libs/juxtapose/latest/css/juxtapose.css">
 
 {:.image-caption}
-*32 rays/pixel vs. 1024 rays/pixel.*
+*16 rays/pixel vs. 1024 rays/pixel.*
 
 The computing process can be summarized by the figure below. The steps in blue and yellow boxes are greatly accelerated by hardware introduced in this paper (RT cores and Tensor cores). We note that the stages in yellow boxes are not inherent to the ray tracing pipeline, they are more like optimization tricks and can be skipped if one desires. In fact, we did not employ these steps in our example above. This example also concludes our discussion on accelerating ray tracing.
 
