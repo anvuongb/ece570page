@@ -23,11 +23,10 @@ author: An Vuong & Nam Nguyen
    * [Overview of Turing architecture](#overview-of-turing-architecture)
       + [More details on SMs](#more-details-on-sms)
       + [Memory hierarchy](#memory-hierarchy)
-   * [RT cores for Ray tracing](#rt-cores-for-ray-tracing) (work-in-progress)
+   * [RT cores for Ray tracing](#rt-cores-for-ray-tracing)
       + [Acceleration of BVH traversal](#acceleration-of-bvh-traversal)
       + [Acceleration by upscaling](#acceleration-by-upscaling)
       + [An example](#an-example)
-- [Benchmark](#benchmark)
 - [Conclusion](#conclusion)
 - [References ](#some-references)
 
@@ -353,15 +352,91 @@ Recently, Nvidia also introduce a new technique called Ray Reconstruction in DLS
 
 <!-- TOC --><a name="an-example"></a>
 #### An example
-<!-- TOC --><a name="benchmark"></a>
-## Benchmark
+
+<p align="center" width="100%">
+    <img width="75%" src="/ece570page/assets/img/blender/ece570_viewport.png" > 
+</p>
+
+{:.image-caption}
+*Simple scene configuration in Blender*
+
+To quickly demonstrate the performance of ray tracing on GPU. We created a simple scene in Blender with some translucent and reflective objects. We then rendered this scene using pure rasterization and path tracer (a more intensive and much more accurate version of ray tracing). The result is as follow:
+
+ <table style="margin: 0px auto;">
+  <tr>
+    <th></th>
+    <th>CPU</th>
+    <th>GPU</th>
+  </tr>
+  <tr>
+    <td>Rasterization</td>
+    <td>-</td>
+    <td>0.51s</td>
+  </tr>
+  <tr>
+    <td>RT 32 rays/pixel</td>
+    <td>13.89s</td>
+    <td>6.9s</td>
+  </tr>
+  <tr>
+    <td>RT 256 rays/pixel</td>
+    <td>100.43s</td>
+    <td>29.68s</td>
+  </tr>
+  <tr>
+    <td>RT 512 rays/pixel</td>
+    <td>198.7s</td>
+    <td>55.9s</td>
+  </tr>
+  <tr>
+    <td>RT 1024 rays/pixel</td>
+    <td></td>
+    <td>112.7s</td>
+  </tr>
+</table> 
+
+{:.image-caption}
+*Table 1: Performance of simple ray traced scene.*
+
+<div class="juxtapose">
+    <img src="/ece570page/assets/img/blender/ece570_rasterization.png" />
+    <img src="/ece570page/assets/img/blender/ece570_1024samples.png" />
+</div>
+
+
+{:.image-caption}
+*Rasterization vs. Path tracing resulting images.*
+
+We can see that as the number of rays increases, the gap between using CPU and GPU gets more significant. The resulting of ray tracing approach, as expected, is much more realistic than that of rasterization. We want to note that this experiment is not truly representative of what Nvidia do, since their approach is hidden within the driver. Furthermore, for real time applications such as video games, the number of rays is usually set at 2 or 4, this helps speed up the performance but will result in a much noisier image (demonstrated below). For this reason, a denoiser step is usually utilized after the ray tracing stage. It helps remove the noise from the final image, the better the denoiser, the smaller number of rays per pixel we need to use, thus making this an important step in the pipeline.
+
+<div class="juxtapose">
+    <img src="/ece570page/assets/img/blender/ece570_32samples.png" />
+    <img src="/ece570page/assets/img/blender/ece570_1024samples.png" />
+</div>
+<script src="https://cdn.knightlab.com/libs/juxtapose/latest/js/juxtapose.min.js"></script>
+<link rel="stylesheet" href="https://cdn.knightlab.com/libs/juxtapose/latest/css/juxtapose.css">
+
+{:.image-caption}
+*32 rays/pixel vs. 1024 rays/pixel.*
+
+The computing process can be summarized by the figure below. The steps in blue and yellow boxes are greatly accelerated by hardware introduced in this paper (RT cores and Tensor cores). We note that the stages in yellow boxes are not inherent to the ray tracing pipeline, they are more like optimization tricks and can be skipped if one desires. In fact, we did not employ these steps in our example above. This example also concludes our discussion on accelerating ray tracing.
+
+<p align="center" width="100%">
+    <img width="100%" src="/ece570page/assets/img/blender/diagram.png" > 
+</p>
+
+{:.image-caption}
+*Ray tracing computing process*
+
 <!-- TOC --><a name="conclusion"></a>
 ## Conclusion
+In this short paper, we have reviewed the basics of ray tracing, Nvidia Turing architecture, as well as how it accelerates the calculation of ray tracing. In the last 5 years, the industry has made great strides in real time ray tracing rendering, and the results have been impressive. That being said, we note that the current performance, even with all the tricks and optimizations, still fall far below what rasterization can produce (in our example, 0.5s compared to 112.7s, more than 200x faster). In our opinions, this means there are still much work to be done with this alternative rendering approach. We expect better results coming from the Denoisers and Upscalers, since the advancement in generative modeling has been unprecedented, integrated these new models into the pipeline is not a trivial task, but it is definitely an exciting one. We look forward to seeing what the industry will bring to this problem in the next few years.
+
 <!-- TOC --><a name="some-references"></a>
 ## References 
 - Kay, Kajiya, *Ray tracing complex scenes*
 - Fujimoto, *Accelerated Ray Tracing*
-- Nah *et al.*, *T\&I Engine: Traversal and Intersection Engine for Hardware Accelerated Ray Tracing*
+- Nah *et al.*, *T&I Engine: Traversal and Intersection Engine for Hardware Accelerated Ray Tracing*
 - Karras, Aila, *Fast Parallel Construction of High-Quality Bounding Volume Hierarchies*
 - [DLSS 2.0 - Image Reconstruction for Real-time Rendering with Deep Learning](https://developer.nvidia.com/gtc/2020/video/s22698-vid)
 - [Ray Reconstruction in DLSS 3.5](https://www.nvidia.com/en-us/geforce/news/nvidia-dlss-3-5-ray-reconstruction/)
