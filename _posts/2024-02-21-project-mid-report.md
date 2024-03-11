@@ -8,6 +8,9 @@ tags: [midreport]
 comments: true
 author: An Vuong & Nam Nguyen
 ---
+{: .box-success}
+Updated Mar 10, 2024. The page for Final Report is created at [here]({{ site.baseurl }}{% link _posts/2024-03-10-project-report.md %})
+
 ## Table of contents 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
