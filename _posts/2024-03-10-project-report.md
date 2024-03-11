@@ -410,7 +410,7 @@ To quickly demonstrate the performance of ray tracing on GPU. We created a simpl
 We can see that as the number of rays increases, the gap between using CPU and GPU gets more significant. The resulting of ray tracing approach, as expected, is much more realistic than that of rasterization. We want to note that this experiment is not truly representative of what Nvidia do, since their approach is hidden within the driver. Furthermore, for real time applications such as video games, the number of rays is usually set at 2 or 4, this helps speed up the performance but will result in a much noisier image (demonstrated below). For this reason, a denoiser step is usually utilized after the ray tracing stage. It helps remove the noise from the final image, the better the denoiser, the smaller number of rays per pixel we need to use, thus making this an important step in the pipeline.
 
 <div class="juxtapose">
-    <img src="/ece570page/assets/img/blender/ece570_32samples.png" />
+    <img src="/ece570page/assets/img/blender/ece570_16samples.png" />
     <img src="/ece570page/assets/img/blender/ece570_1024samples.png" />
 </div>
 <script src="https://cdn.knightlab.com/libs/juxtapose/latest/js/juxtapose.min.js"></script>
