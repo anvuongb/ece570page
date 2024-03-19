@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Project Report
+title: Final Project Report
 subtitle: A review of hardware-based acceleration of Ray tracing
 # gh-repo: daattali/beautiful-jekyll
 # gh-badge: [star, fork, follow]
@@ -8,8 +8,6 @@ tags: [report]
 comments: true
 author: An Vuong & Nam Nguyen
 ---
-{: .box-success}
-Updated Mar 19, 2024. The page for (updated) Final Report is created at [here]({{ site.baseurl }}{% link _posts/2024-03-19-final-project-report.md %})
 ## Table of contents 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
@@ -436,10 +434,10 @@ In this short paper, we have reviewed the basics of ray tracing, Nvidia Turing a
 
 <!-- TOC --><a name="some-references"></a>
 ## References 
-- Kay, Kajiya, *Ray tracing complex scenes*
-- Fujimoto, *Accelerated Ray Tracing*
-- Nah *et al.*, *T&I Engine: Traversal and Intersection Engine for Hardware Accelerated Ray Tracing*
-- Karras, Aila, *Fast Parallel Construction of High-Quality Bounding Volume Hierarchies*
+- Kay, T. L., & Kajiya, J. T. (1986). Ray tracing complex scenes. *ACM SIGGRAPH computer graphics*, 20(4), 269-278.
+- Fujimoto, A., & Iwata, K. (1985). Accelerated ray tracing. In *Computer Graphics: Visual Technology and Art Proceedings of Computer Graphics Tokyo′ 85* (pp. 41-65). Tokyo: Springer Japan.
+- Nah, J. H., Park, J. S., Park, C., Kim, J. W., Jung, Y. H., Park, W. C., & Han, T. D. (2011, December). T&I engine: Traversal and intersection engine for hardware accelerated ray tracing. In *Proceedings of the 2011 SIGGRAPH Asia Conference* (pp. 1-10).
+- Karras, T., & Aila, T. (2013, July). Fast parallel construction of high-quality bounding volume hierarchies. In *Proceedings of the 5th High-Performance Graphics Conference* (pp. 89-99).
 - [DLSS 2.0 - Image Reconstruction for Real-time Rendering with Deep Learning](https://developer.nvidia.com/gtc/2020/video/s22698-vid)
 - [Ray Reconstruction in DLSS 3.5](https://www.nvidia.com/en-us/geforce/news/nvidia-dlss-3-5-ray-reconstruction/)
 - [Nvidia Turing white paper](https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf)
