@@ -13,7 +13,7 @@
 title: ECE 570 Project - OSU Winter'24
 
 # Your name to show in the footer
-author: An Vuong & Nam Nguyen
+author: An Vuong 
 
 ###############################################
 # --- List of links in the navigation bar --- #
@@ -50,7 +50,6 @@ round-avatar: false
 # Uncomment the links you want to show and add your information to each one.
 social-network-links:
   email: "vuonga2@oregonstate.edu"
-  email2: "nguynam4@oregonstate.edu"
   # rss: true  # remove this line if you don't want to show an RSS link at the bottom
   # facebook: deanattali
   # github: daattali

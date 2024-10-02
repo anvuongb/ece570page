@@ -6,7 +6,7 @@ subtitle: A review of hardware-based acceleration of Ray tracing
 # gh-badge: [star, fork, follow]
 tags: [proposal]
 comments: true
-author: An Vuong & Nam Nguyen
+author: An Vuong 
 ---
 {: .box-success}
 Updated Feb 21, 2024. The page for Midreport is created at [here]({{ site.baseurl }}{% link _posts/2024-02-21-project-mid-report.md %})

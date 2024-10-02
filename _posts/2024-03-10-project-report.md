@@ -6,7 +6,7 @@ subtitle: A review of hardware-based acceleration of Ray tracing
 # gh-badge: [star, fork, follow]
 tags: [report]
 comments: true
-author: An Vuong & Nam Nguyen
+author: An Vuong
 ---
 {: .box-success}
 Updated Mar 19, 2024. The page for (updated) Final Report is created at [here]({{ site.baseurl }}{% link _posts/2024-03-19-final-project-report.md %})
